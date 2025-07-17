@@ -11,17 +11,22 @@ use solana_sdk::{
 
 const RECORD_META_DATA_SIZE: usize = 33;
 
-#[derive(Serialize)]
-struct TestControl {
+#[derive(Serialize, Debug)]
+#[repr(C)]
+pub(crate) struct TestConfig {
     test_interval_slots: u8,
-    _future_use: [u8; 3],
+    verify_signatures: bool,
+    packet_extra_size: u16, // packet size above header size
+    _future_use: [u8; 16],
 }
 
-impl TestControl {
-    fn new(test_interval_slots: u8) -> Self {
+impl TestConfig {
+    fn new(test_interval_slots: u8, verify_signatures:bool, packet_extra_size:u16) -> Self {
         Self {
             test_interval_slots,
-            _future_use: [0, 0, 0],
+            verify_signatures,
+            packet_extra_size,
+            _future_use: [0u8; 16],
         }
     }
     fn as_bytes(&self) -> [u8; 4] {
@@ -45,7 +50,7 @@ async fn main() {
     let rpc_url = String::from("http://127.0.0.1:8899");
     let client = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
 
-    let record_size = std::mem::size_of::<TestControl>();
+    let record_size = std::mem::size_of::<TestConfig>();
     let account_size = RECORD_META_DATA_SIZE + record_size;
     let lamports = client
         .get_minimum_balance_for_rent_exemption(account_size)
@@ -86,7 +91,7 @@ async fn main() {
     }
 
     // send instruction to write number into account
-    let initial = TestControl::new(46);
+    let initial = TestConfig::new(46, false, 42);
     let instruction_write = instruction::write(
         &storage_holder_kp.pubkey(),
         &payer_kp.pubkey(),

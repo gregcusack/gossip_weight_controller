@@ -811,6 +811,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "client"
+version = "0.1.0"
+dependencies = [
+ "all2all_controller",
+ "serde",
+ "serde_json",
+ "solana-client",
+ "solana-pubkey",
+ "solana-sdk",
+ "tokio",
+]
+
+[[package]]
 name = "combine"
 version = "3.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2935,6 +2948,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "program_data_fetch"
+version = "0.1.0"
+dependencies = [
+ "solana-client",
+ "solana-pubkey",
+ "solana-sdk",
+ "tokio",
+]
+
+[[package]]
 name = "qstring"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3249,19 +3272,6 @@ dependencies = [
  "libc",
  "untrusted",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "rust"
-version = "0.1.0"
-dependencies = [
- "all2all_controller",
- "serde",
- "serde_json",
- "solana-client",
- "solana-pubkey",
- "solana-sdk",
- "tokio",
 ]
 
 [[package]]
