@@ -17,16 +17,16 @@ const RECORD_META_DATA_SIZE: usize = 33;
 pub(crate) struct TestConfig {
     test_interval_slots: u8,
     verify_signatures: bool,
-    packet_extra_size: u16, // packet size above header size
+    packet_size: u16, // packet size above header size
     _future_use: [u8; 16],
 }
 
 impl TestConfig {
-    fn new(test_interval_slots: u8, verify_signatures: bool, packet_extra_size: u16) -> Self {
+    fn new(test_interval_slots: u8, verify_signatures: bool, packet_size: u16) -> Self {
         Self {
             test_interval_slots,
             verify_signatures,
-            packet_extra_size,
+            packet_size,
             _future_use: [0u8; 16],
         }
     }
@@ -55,9 +55,9 @@ struct Commandline {
     /// Whether sigverify should be called for every packet
     verify_signatures: bool,
     #[arg(long, short, default_value_t = 128)]
-    /// Extra bytes to append to every packet
-    packet_extra_size: u16,
-    #[arg(long, short, default_value = "http://10.138.0.7:8899")]
+    /// Size of packets to send
+    packet_size: u16,
+    #[arg(long, short, default_value = "http://127.0.0.1:8899")]
     /// RPC URL to send transactions through
     rpc_url: String,
     #[arg(long, short, default_value = "id.json")]
@@ -114,7 +114,7 @@ async fn main() {
     }
 
     // send instruction to write number into account
-    let initial = TestConfig::new(cli.interval, cli.verify_signatures, cli.packet_extra_size);
+    let initial = TestConfig::new(cli.interval, cli.verify_signatures, cli.packet_size);
     let instruction_write = instruction::write(
         &storage_holder_kp.pubkey(),
         &payer_kp.pubkey(),
