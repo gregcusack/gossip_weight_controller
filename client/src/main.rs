@@ -1,4 +1,5 @@
 use all2all_controller::instruction;
+use clap::Parser;
 use serde::Serialize;
 use solana_client::rpc_client::RpcClient;
 #[allow(deprecated)]
@@ -21,7 +22,7 @@ pub(crate) struct TestConfig {
 }
 
 impl TestConfig {
-    fn new(test_interval_slots: u8, verify_signatures:bool, packet_extra_size:u16) -> Self {
+    fn new(test_interval_slots: u8, verify_signatures: bool, packet_extra_size: u16) -> Self {
         Self {
             test_interval_slots,
             verify_signatures,
@@ -44,11 +45,33 @@ fn load_keypair_from_json(fname: &str) -> Keypair {
     let payer: Vec<u8> = serde_json::from_reader(keypair_file).unwrap();
     Keypair::from_bytes(&payer).unwrap()
 }
+
+#[derive(Parser)]
+struct Commandline {
+    #[arg(long, short)]
+    /// interval of all2all broadcasts sent out
+    interval: u8,
+    #[arg(long, short)]
+    /// Whether sigverify should be called for every packet
+    verify_signatures: bool,
+    #[arg(long, short, default_value_t = 128)]
+    /// Extra bytes to append to every packet
+    packet_extra_size: u16,
+    #[arg(long, short, default_value = "http://10.138.0.7:8899")]
+    /// RPC URL to send transactions through
+    rpc_url: String,
+    #[arg(long, short, default_value = "id.json")]
+    /// Payer keypair that will pay for deployment
+    payer_keypair: String,
+    #[arg(long, short, default_value = "all2all.json")]
+    /// Keypair under which the program will write data
+    storage_holder_kp: String,
+}
+
 #[tokio::main]
 async fn main() {
-    // Connect to the local Solana devnet
-    let rpc_url = String::from("http://127.0.0.1:8899");
-    let client = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
+    let cli = Commandline::parse();
+    let client = RpcClient::new_with_commitment(cli.rpc_url, CommitmentConfig::confirmed());
 
     let record_size = std::mem::size_of::<TestConfig>();
     let account_size = RECORD_META_DATA_SIZE + record_size;
@@ -56,8 +79,8 @@ async fn main() {
         .get_minimum_balance_for_rent_exemption(account_size)
         .unwrap();
 
-    let payer_kp = load_keypair_from_json("/home/sol/identity/id.json");
-    let storage_holder_kp = load_keypair_from_json("all2all.json");
+    let payer_kp = load_keypair_from_json(&cli.payer_keypair);
+    let storage_holder_kp = load_keypair_from_json(&cli.storage_holder_kp);
 
     // create the account
     let recent_blockhash = client.get_latest_blockhash().unwrap();
@@ -91,7 +114,7 @@ async fn main() {
     }
 
     // send instruction to write number into account
-    let initial = TestConfig::new(46, false, 42);
+    let initial = TestConfig::new(cli.interval, cli.verify_signatures, cli.packet_extra_size);
     let instruction_write = instruction::write(
         &storage_holder_kp.pubkey(),
         &payer_kp.pubkey(),
