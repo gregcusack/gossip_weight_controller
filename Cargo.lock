@@ -905,6 +905,8 @@ name = "client"
 version = "0.1.0"
 dependencies = [
  "all2all_controller",
+ "bincode",
+ "bs58",
  "clap",
  "serde",
  "serde_json",
