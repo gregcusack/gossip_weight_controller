@@ -1,3 +1,4 @@
+#![allow(clippy::arithmetic_side_effects)]
 use all2all_controller::instruction;
 use clap::{Parser, Subcommand};
 use serde::Serialize;
@@ -16,23 +17,18 @@ const RECORD_META_DATA_SIZE: usize = 33;
 #[derive(Serialize, Debug)]
 #[repr(C)]
 pub(crate) struct TestConfig {
-    test_interval_slots: u8,
-    verify_signatures: bool,
+    test_interval_slots: u16,
     packet_size: u16, // packet size above header size
     _future_use: [u8; 16],
 }
 
 impl TestConfig {
-    fn new(test_interval_slots: u8, verify_signatures: bool, packet_size: u16) -> Self {
+    fn new(test_interval_slots: u16, packet_size: u16) -> Self {
         Self {
             test_interval_slots,
-            verify_signatures,
             packet_size,
             _future_use: [0u8; 16],
         }
-    }
-    fn as_bytes(&self) -> [u8; 4] {
-        [self.test_interval_slots, 0, 0, 0]
     }
 }
 
@@ -51,11 +47,7 @@ fn load_keypair_from_json(fname: &str) -> Keypair {
 struct Commandline {
     #[arg(long, short)]
     /// interval of all2all broadcasts sent out
-    interval: u8,
-
-    #[arg(long)]
-    /// Whether sigverify should be called for every packet
-    verify_signatures: bool,
+    interval: u16,
 
     #[arg(long, default_value_t = 128)]
     /// Size of packets to send
@@ -95,7 +87,8 @@ async fn main() {
     let cli = Commandline::parse();
     let client = RpcClient::new_with_commitment(cli.rpc_url, CommitmentConfig::confirmed());
 
-    let record_size = std::mem::size_of::<TestConfig>();
+    let record_size =
+        bincode::serialized_size(&TestConfig::new(cli.interval, cli.packet_size)).unwrap() as usize;
     let account_size = RECORD_META_DATA_SIZE + record_size;
     let lamports = client
         .get_minimum_balance_for_rent_exemption(account_size)
@@ -149,12 +142,13 @@ async fn main() {
         }
         Commands::Write {} => {
             // send instruction to write number into account
-            let initial = TestConfig::new(cli.interval, cli.verify_signatures, cli.packet_size);
+            let test_config = TestConfig::new(cli.interval, cli.packet_size);
+            let test_config = bincode::serialize(&test_config).unwrap();
             let instruction_write = instruction::write(
                 &storage_holder_kp.pubkey(),
                 &payer_kp.pubkey(),
                 0,
-                &initial.as_bytes(),
+                &test_config,
             );
             let mut transaction =
                 Transaction::new_with_payer(&[instruction_write], Some(&payer_kp.pubkey()));
