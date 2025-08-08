@@ -1,5 +1,5 @@
 [package]
-name = "all2all_controller"
+name = "gossip_weight_controller"
 version = "0.3.0"
 description = "Solana Program Library Record Program"
 authors = ["Anza Maintainers <maintainers@anza.xyz>"]

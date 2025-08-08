@@ -140,28 +140,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "all2all_controller"
-version = "0.3.0"
-dependencies = [
- "bytemuck",
- "num-derive",
- "num-traits",
- "solana-account-info",
- "solana-decode-error",
- "solana-instruction",
- "solana-msg",
- "solana-program-entrypoint",
- "solana-program-error",
- "solana-program-pack",
- "solana-program-test",
- "solana-pubkey",
- "solana-rent",
- "solana-sdk",
- "solana-security-txt",
- "thiserror 2.0.12",
-]
-
-[[package]]
 name = "alloc-no-stdlib"
 version = "2.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -904,15 +882,24 @@ checksum = "b94f61472cee1439c0b966b47e3aca9ae07e45d070759512cd390ea2bebc6675"
 name = "client"
 version = "0.1.0"
 dependencies = [
- "all2all_controller",
  "bincode",
  "bs58",
  "clap",
+ "gossip_weight_controller",
+ "log",
  "serde",
  "serde_json",
+ "solana-account-info",
  "solana-client",
+ "solana-commitment-config",
+ "solana-instruction",
+ "solana-keypair",
+ "solana-program",
  "solana-pubkey",
- "solana-sdk",
+ "solana-signature",
+ "solana-signer",
+ "solana-system-interface",
+ "solana-transaction",
  "tokio",
 ]
 
@@ -1741,6 +1728,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07e28edb80900c19c28f1072f2e8aeca7fa06b23cd4169cefe1af5aa3260783f"
 
 [[package]]
+name = "gossip_weight_controller"
+version = "0.3.0"
+dependencies = [
+ "bytemuck",
+ "num-derive",
+ "num-traits",
+ "solana-account-info",
+ "solana-decode-error",
+ "solana-instruction",
+ "solana-msg",
+ "solana-program-entrypoint",
+ "solana-program-error",
+ "solana-program-pack",
+ "solana-program-test",
+ "solana-pubkey",
+ "solana-rent",
+ "solana-sdk",
+ "solana-security-txt",
+ "thiserror 2.0.12",
+]
+
+[[package]]
 name = "governor"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2408,9 +2417,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.26"
+version = "0.4.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30bde2b3dc3671ae49d8e2e9f044c7c005836e7a023ee57cffa25ab82764bb9e"
+checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
 
 [[package]]
 name = "lz4"
